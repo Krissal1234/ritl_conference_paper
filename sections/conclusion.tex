@@ -1,0 +1,24 @@
+\section{Conclusion}\label{s:conclusion}
+Answering RQ1, this thesis presented RITL (Rocket in the Loop), a closed-loop framework that couples the RocketPy flight simulator with the F Prime flight software framework via a dedicated Python Orchestrator. RITL is the first framework to couple these two tools in a closed feedback loop, enabling flight software to receive sensor input and return actuation output that influences the simulation state at each step. The framework supports SIL and HIL execution, three coupling strategies and fault injection within the simulation loop, directly addressing a gap that existing open-loop HPR tools could not fill. 
+
+Addressing RQ2, three coupling strategies span from fully synchronised to fully decoupled. Lockstep, which blocks at every callback until the FSW responds, produces a mean apogee within 0.08\,m of the standalone baseline in both SIL and HIL execution contexts. This makes it the most accurate strategy to validate the flight logic correctness under ideal conditions. Snapshot and Rate Group strategies produce a one-tick actuation delay, which directly arises from their non-blocking Orchestrator design. Snapshot produces a consistent 4.1\,m overshoot, while Rate Group's overshoot ranges from 3.84\,m (SIL) to 7.39\,m (HIL), reflecting additional timing non-determinism. A frequency sweep of the Rate Group strategy showed that apogee error decreases monotonically with tick frequency from 209\,m at 1\,Hz to 4.02\,m at 50\,Hz, with diminishing accuracy gains beyond 25\,Hz, informing the selection of this frequency for the strategy comparison. HIL configurations introduce additional wall-clock overhead relative to their SIL counterparts, attributable to Ethernet round-trip latency and the reduced CPU performance of the Raspberry Pi 4 target.
+
+A sweep of the controller callback rate under the Lockstep and Snapshot strategies showed the same trend: Lockstep matched the baseline within approximately 0.1\,m at every tested rate, while Snapshot's overshoot fell from 4.8\,m at 5\,Hz to 1.3\,m at 50\,Hz. A brief check of solver time-step sensitivity found no meaningful effect on apogee within the range tested.
+
+For RQ3, the fault injection experiment demonstrated that the FSW successfully detected a simulated barometric freeze mid-flight and completed the full recovery sequence in both SIL and HIL contexts. Notably, the IMU-based fallback was deployed within 0.1\,s of apogee, compared to 1.54\,s under nominal barometric detection, a result that could not have been observed through open-loop testing alone, and one that further demonstrates the value of RITL for flight software development.
+
+Future work should evaluate UDP as a replacement for TCP between Orchestrator and F Prime, which should reduce communication overhead and more closely reflect embedded transport behaviour. Extending the fault injection coverage to include air brake fallback logic, additional faults, and a broader range of rocket configurations would strengthen the generalisability of the results. Deploying and running the framework on a bare-metal or RTOS-based target would address the timing constraints that the Raspberry Pi 4, running a standard OS without real-time scheduling guarantees, could not fully capture. Finally, generalising the simulator side of the Orchestrator and adding an interface for a standard Functional Mock-up Unit (FMU) would decouple the framework from RocketPy specifically, allowing any FMI-compliant simulator, such as Simulink, to be coupled with F Prime through the same interface. This would align RITL with established co-simulation tooling used in industry, broadening the range of compatible simulators and lowering the barrier for teams already invested in existing simulation environments to adopt a closed-loop testing workflow.
+
+Student rocketry teams now have a tool that did not exist before: a closed-loop environment in which the actual flight software, not a model of it, is run against a physics-based trajectory simulation before a rocket ever leaves the pad. As missions grow more ambitious and flight software more complex, the need for this kind of pre-flight validation will only increase. RITL is a step toward making that infrastructure accessible to teams that cannot afford to learn from a failed launch.
+
+%future work : controlled experiment testing development with and withou RITL
+
+%maybe move implications to section 6
+% move answering RQ to discission
+
+
+
+
+
+
+

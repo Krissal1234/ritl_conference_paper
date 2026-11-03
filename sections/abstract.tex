@@ -1,0 +1,14 @@
+\noindent \textit{Context}. 
+Student rocketry teams operate flight software (FSW) responsible for critical events such as apogee detection, parachute deployment and control algorithms, yet have no equivalent to the closed-loop Software/Hardware-in-the-Loop (SIL/HIL) infrastructure available in the Unmanned Aerial Vehicle (UAV) and spacecraft programmes. Existing tools like OpenRocket and RocketPy remain open-loop, with no mechanism to couple them into a closed feedback loop.
+
+\noindent \textit{Goal}. 
+This study investigates how a closed-loop simulation environment for high-powered rocket (HPR) FSW can be designed, how different coupling strategies and execution contexts affect apogee accuracy and timing, and whether the framework can support fault injection for pre-flight failure-recovery testing.
+
+\noindent \textit{Method}. 
+This paper presents RITL (Rocket in the Loop), a Python Orchestrator that couples RocketPy, an HPR trajectory simulator, with the F Prime flight software framework in a live closed feedback loop, supporting three coupling strategies: Lockstep, Snapshot and Rate Group, across both SIL and HIL execution contexts, the latter evaluated on a Raspberry Pi 4. Using the Camões EuRoC 2023 rocket configuration, each strategy is evaluated against a 12 m pre-flight acceptance threshold, alongside a fault injection test using a simulated barometric sensor freeze.
+
+\noindent \textit{Results}. 
+Lockstep matches the standalone baseline within 0.08\,m in both SIL and HIL, suited for validating flight logic correctness under idealised, fully-synchronised conditions. Snapshot and Rate Group both introduce a structural one-tick actuation delay, producing consistent overshoots of 4.1\,m for Snapshot and a 3.84--7.39\,m overshoot with higher variance for Rate Group, more representative of real embedded timing. All strategies remain within the 12\,m  pre-flight acceptance threshold. Following a simulated barometric fault, the FSW correctly detected the failure and deployed the drogue parachute via an IMU-based fallback within 0.1\,s of true apogee.
+
+\noindent \textit{Conclusions}. 
+RITL is the first framework to couple RocketPy with F Prime, giving student rocketry teams a practical, accessible tool to validate the actual flight software, not a model of it, before launch.
