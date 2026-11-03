@@ -1,76 +1,17 @@
 \section{Introduction}\label{s:intro}
-Student rocketry teams such as RISE \cite{rise} build and launch high-powered rockets to altitudes of up to 9~km, carrying scientific payloads and operating flight software (FSW) responsible for processing sensor data, phase detection, parachute deployment and active control~\cite{rocketpy-ref, clary2024georgia-tech-avionics}. As the ambitions of these missions grow, so does the complexity of the software that drives them and the risk that software faults go undetected before launch. Among these responsibilities is the detection of the apogee, the moment the rocket reaches its maximum altitude, which triggers recovery events such as parachute ejection. An early or missed deployment cannot be corrected.
+Student rocketry teams such as RISE~\cite{rise} launch high-powered rockets (HPR) to altitudes of up to 9~km. Their flight software (FSW) processes sensor data, detects flight phases, deploys parachutes and, on more advanced vehicles, controls air brakes~\cite{rocketpy-ref, clary2024georgia-tech-avionics}. Apogee detection is the critical case: an early or missed parachute deployment cannot be corrected in flight.
 
-Testing flight software against live launches is impractical. Launches are too expensive, conditions are uncontrolled, and failures are irreversible~\cite{coopmans-sil-hil-verification-uav, kiesbye2019-moveII-cubsat}. Simulation-based verification places flight software in a closed feedback loop with a physics-based trajectory model, executing the flight software throughout the flight lifecycle before committing to a launch. This field is well-established in the UAV and small spacecraft domains~\cite{santos-hil-uav-autopilot, bittar-guidance-sil-uav-xplane-simulink, kiesbye2019-moveII-cubsat}, but there is no equivalent infrastructure for high-powered rocketry.
+Testing against live launches is impractical. Launches are expensive, uncontrolled and irreversible~\cite{coopmans-sil-hil-verification-uav, kiesbye2019-moveII-cubsat}. UAV and small-spacecraft programmes instead close a feedback loop between the flight software and a physics-based plant model, either in software (SIL) or on the target hardware (HIL)~\cite{santos-hil-uav-autopilot, bittar-guidance-sil-uav-xplane-simulink, kiesbye2019-moveII-cubsat}. Institutional programmes have years of investment in such infrastructure. Student teams, with volunteer labour, small budgets and single-use rockets, do not. They rely on open-source tools: OpenRocket~\cite{niskanen2013openrocket} and RocketPy~\cite{rocketpy-ref} for trajectories, and NASA's F Prime~\cite{bocchino2018fprime} for flight software. No framework couples them.
 
-Institutional programmes such as ESA or NASA address this gap with dedicated Hardware-in-the-Loop (HIL) setups and mature Software-in-the-Loop (SIL) pipelines built over years of experience and investment. Student teams do not have an equivalent; they operate on limited budgets, with part-time volunteers and single-use rockets. A failed flight can ruin a team's season, particularly in annual competitions where no secondary launch window exists. Instead, student teams rely on open-source trajectory tools, most notably OpenRocket \cite{niskanen2013openrocket} and RocketPy \cite{rocketpy-ref}, as well as modular flight software frameworks such as NASA's F Prime \cite{bocchino2018fprime}. These tools are mature in their respective domains, yet there is no framework to couple them into a closed feedback loop with live flight software.
+The gap is structural. OpenRocket, the Cambridge Rocketry Simulator and RocketPy~\cite{niskanen2013openrocket, eerland2017cambridgerocketry, rocketpy-ref} predict a trajectory offline from geometry, thrust curve and environment. None accepts control outputs from running software or feeds it live sensor data, and none can inject sensor faults, so failure-recovery logic stays untested until flight.
 
-\subsection{Problem Statement}
-Existing rocketry simulators, including OpenRocket, the Cambridge Rocketry Simulator, and RocketPy~\cite{niskanen2013openrocket,eerland2017cambridgerocketry, rocketpy-ref}, are designed as open-loop trajectory prediction systems. Given initial parameters such as geometry, motor thrust curves and environmental conditions, they produce the rocket's predicted trajectory for offline analysis. They do not expose an interface capable of feeding real-time sensor inputs into active flight software or accepting control outputs that influence the simulation state.
+This paper presents RITL (Rocket in the Loop), which closes that loop between RocketPy and F Prime through a Python Orchestrator. RocketPy is a continuous-time simulator and F Prime is discrete and event-driven, so coupling them is a heterogeneous co-simulation problem~\cite{gomes2017cosimulation}. We make three contributions, each tied to a research question (RQ):
+\begin{itemize}
+\item \textbf{RQ1:} How can a closed-loop environment for HPR flight software be built from RocketPy and F Prime? We give an architecture that exchanges sensor and actuation data at every controller step without modifying RocketPy's solver, and runs the same FSW in SIL and HIL with a recompilation only.
+\item \textbf{RQ2:} How do the coupling strategy and the execution context (SIL or HIL) affect apogee accuracy, parachute timing and wall-clock cost? We characterise three strategies, Lockstep, Snapshot and Rate Group, in SIL and on a Raspberry Pi 4.
+\item \textbf{RQ3:} Can the framework inject a sensor fault during flight, and does the FSW recover so that parachute deployment still succeeds? We demonstrate in-loop fault injection with a barometer freeze.
+\end{itemize}
 
-A closed-loop simulation environment would enable student teams to iteratively validate flight software logic, ensuring that phase detection, control mechanisms and parachute deployments are tested against a realistic trajectory model before committing to a launch. This reduces the risk of software faults that may not be exposed through open-loop replay and unit testing. Existing offline tools also lack a mechanism to inject simulated sensor faults in flight, leaving failure-recovery logic unvalidated before launch.
+RQ1 is answered by a working implementation rather than a measurable hypothesis. For RQ2 we take an apogee error below 12\,m as the acceptance threshold for pre-flight verification. It comes from the Camões rocket configuration used throughout~\cite{rocketpy_camoes}: the standalone RocketPy prediction of 3003\,m differed by 12\,m from the 3015\,m recorded at EuRoC 2023. A coupling error below that existing prediction uncertainty does not reduce the value of the simulation compared with using RocketPy alone.
 
-\subsection{Proposed Solution}
-This thesis proposes RITL (Rocket in the Loop), a closed-loop framework that couples the RocketPy flight simulator with the F Prime flight software framework. The proposed framework introduces a dedicated Python Orchestrator that mediates between the two systems, enabling the exchange of sensor data and control outputs at each simulation step. RITL supports both SIL and HIL execution, with HIL validated on a Raspberry Pi 4 as the target embedded hardware.
-
-Three coupling strategies are evaluated: Lockstep, Snapshot, and Rate Group, each differing in the degree to which the flight software is synchronised with the simulation and in the trade-offs between accuracy, wall-clock time and timing determinism. The framework also supports fault injection within the simulation loop, enabling testing of failure-recovery behaviour before flight.
-
-
-\subsection{Research Questions}\label{ss:rqs}
-\begin{quote}
-\textbf{RQ1:} How can a closed-loop simulation environment for high-powered rocket flight software be designed and implemented using RocketPy and F Prime?
-\end{quote}
-
-\begin{quote}
-\textbf{RQ2:} How do different coupling strategies and execution contexts (SIL and HIL) affect apogee accuracy and parachute deployment timing, and what is the wall-clock overhead introduced by each strategy? 
-\end{quote}
-
-\begin{quote}
-\textbf{RQ3:} Can the framework inject a simulated sensor fault during flight, and can the flight software recover such that parachute deployment is still successful despite the fault?
-\end{quote}
-
-Currently, there is no closed-loop coupling between HPR trajectory simulators and flight software frameworks. RQ1 is answered by demonstrating a working implementation rather than by a measurable hypothesis. Success is defined as: (1) RocketPy and F Prime exchange sensor and actuation data at each simulation step without modification to RocketPy's core solver, and (2) the same FSW deployment runs across SIL and HIL with no source changes, only recompilation for the target architecture. Section \ref{closed-loop-sim-env} demonstrates each of these through an engineering approach.
-
-The choice of coupling strategies for RQ2 determines the trade-off between synchronisation, timing determinism and wall-clock performance. Characterising these trade-offs determines whether a given coupling strategy produces simulation results that can be trusted for pre-flight verification and at what computational cost. This study takes an apogee error below 12\,m as the acceptance threshold for pre-flight verification accuracy. This threshold is derived from the Camões rocket configuration used throughout this study~\cite{rocketpy_camoes}, where the standalone RocketPy prediction of 3003\,m differed from the recorded launch at EuRoC in 2023 of 3015\,m by 12\,m. A coupling strategy that introduces less error than this existing prediction uncertainty does not degrade the value of the simulation relative to what a team already accepts when using RocketPy alone.
-
-
-For RQ3, flight software must handle sensor failures gracefully. A sensor data fault may prevent correct apogee detection and parachute deployment, an irreversible failure during a live launch. Validating failure-recovery behaviour in simulation before flight reduces the risk of such faults going undetected.
-
-\subsection{Structure}
-The remainder of this thesis is structured as follows. Section \ref{s:background} provides background on student rocketry, flight software, F Prime, RocketPy, simulation-based verification and co-simulation. Section \ref{s:related} reviews related work in SIL/HIL testing across the UAV, spacecraft and rocketry domains. Section \ref{closed-loop-sim-env} presents the design and implementation of RITL, addressing RQ1. Section \ref{experiment-design} describes the experiment design, including the hypotheses, baseline rocket configuration, variables and experimental setup to evaluate RQ2 and RQ3. Section 6 reports and discusses the experimental results. Section 7 discusses the implications of these results for rocketry teams and identifies the limitations of this study. Section 8 assesses the threats to the validity of the study's design and results. Section 9 concludes the thesis and outlines directions for future work.
-
-
-% Previous RQs
-
-% \begin{quote}
-% \textbf{RQ:} How can flight software for high-powered rockets be verified in a closed-loop simulation environment, and what are the accuracy and performance tradeoffs between different coupling architectures?
-% \end{quote}
-
-% This is further divided into the following sub-questions:
-
-% \begin{table}[h]
-% \centering
-% \small
-% \begin{tabular}{lp{6cm}}
-% \toprule
-% \textbf{ID} & \textbf{Research Question} \\
-% \midrule
-% RQ1 & Do different coupling architectures produce different 
-%       apogee accuracy, parachute deployment timing and airbrake deployment behaviour relative to a standalone baseline? \\[4pt]
-% RQ2 & What is the performance cost of each coupling 
-%       architecture in terms of simulation wall-clock time? \\[4pt]
-% RQ3 & Does deploying the FSW on real hardware (HIL) introduce differences in apogee accuracy, parachute deployment timing, or airbrake deployment behaviour compared to SIL? \\[4pt]
-% RQ4 & How does the FSW execution rate affect apogee accuracy, airbrake deployment behaviour, and parachute deployment timing in the Rate Group architecture? \\[4pt]
-% RQ5 & Can the framework inject a simulated sensor fault during flight, and does the FSW recover such that apogee accuracy and parachute deployment remain within acceptable bounds relative to the baseline? \\
-% \bottomrule
-% \end{tabular}
-% \caption{Research questions addressed in this paper.}
-% \label{tab:rqs}
-% \end{table}
-
-% \TODO{
-% This section includes some motivations behind the work, explicitly or implicitly
-% highlights the research question, provides a high-level explanation of the
-% solution, and describes the contributions.
-% }
-
+Section~\ref{s:background} gives background and Section~\ref{s:related} related work. Section~\ref{closed-loop-sim-env} presents the framework (RQ1), Section~\ref{experiment-design} the experiments (RQ2, RQ3) and Section~\ref{s:evaluation} their results. Section~\ref{discussion} discusses implications and threats to validity, and Section~\ref{s:conclusion} concludes.

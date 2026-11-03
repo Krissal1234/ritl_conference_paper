@@ -1,103 +1,12 @@
-\section{Experiment Design}\label{experiment-design}
+\section{Experimental Design}\label{experiment-design}
+\textbf{Hypotheses.} $H_1$: strategies that decouple the FSW from each simulation step delay actuation and so overshoot the standalone baseline apogee, while Lockstep does not. $H_2$: HIL runs take longer in wall-clock time than SIL runs, because of Ethernet latency and the slower CPU. $H_3$: after a barometer freeze injected mid-flight, the FSW detects the fault and deploys the drogue near apogee through the IMU fallback, in both SIL and HIL. $H_1$ and $H_2$ address RQ2, and $H_3$ addresses RQ3.
 
-\subsection{Hypotheses}\label{hypotheses}
-%say these hypotheses are adressing RQ 2 and 3
-Based on the architectural properties of each coupling strategy described in Section~\ref{closed-loop-sim-env} and the research questions defined in Section \ref{ss:rqs}, three hypotheses are formulated:
+\textbf{Rocket and baseline.} We use the Camões rocket, built by Rocket Experiment Division and launched at EuRoC 2023 (recorded apogee 3015\,m, RocketPy prediction 3003\,m), configured from RocketPy's public example~\cite{rocketpy_camoes}. That example computes actuation directly from the ground-truth state vector, which an embedded FSW never has, so its flight logic cannot be reused. We wrote the flight logic of Section~\ref{flight-logic} instead. The baseline is a standalone RocketPy simulation with the same rocket, motor and environment, in which that logic is translated to Python and runs inside the callback on RocketPy's sensor models. Any difference between baseline and RITL therefore comes from the coupling alone. The baseline has no networked or hardware components, so its apogee and event times are deterministic; only its wall-clock time varies.
 
-\begin{description}
-    \item[$H_1$] Coupling strategies that decouple the FSW from each simulation step introduce a delay in actuation, causing an apogee overshoot relative to the Non-SIL baseline, whereas Lockstep, which enforces tight synchronisation, does not. 
-    
-    \item[$H_2$] HIL configurations produce a higher wall-clock time than their SIL counterparts, due to Ethernet communication latency and the reduced CPU performance of the target hardware.
+\textbf{Variables.} The independent variables are the coupling strategy, the execution context (SIL or HIL) and, for Rate Group, the \texttt{RateGroupDriver} tick frequency (1, 5, 10, 25 and 50\,Hz). The dependent variables are apogee altitude and time, drogue and main deployment times, and wall-clock time per run. Unless varied, the sensor-model rate, the parachute-trigger rate and the controller callback rate are fixed at 10\,Hz and the solver step at 0.001\,s.
 
-    \item[$H_3$] Following a simulated barometric sensor fault injected mid-flight, the FSW successfully detects the fault and activates the IMU-based fallback path, deploying the drogue parachute at or near apogee in both SIL and HIL contexts.
-\end{description}
-
-% sensor fault injected mid flight, the flight software achieves mission performace comparable too nominal flight in both sil vs hil
-
-% we can use effect size - we can also say we use 10 runs as big samples give small differences while smaller sample sizes show large
-
-% we can use effect size and say that, there is statistical significance but small effect size 
-
-\noindent $H_1$ and $H_2$ apply to RQ2, targeting coupling strategy accuracy, execution context and performance, respectively. $H_3$ applies to RQ3, testing whether fault-recovery logic is valid under a sensor fault. RQ1 is addressed through the engineering contribution in Section \ref{closed-loop-sim-env}.
-
-\subsection{Baseline and Rocket Configuration}
-
-The rocket configuration used throughout this study is based on the Camões rocket, developed by Rocket Experiment Division and launched at EuRoC in 2023, where it achieved a recorded apogee of 3015\,m against a RocketPy-simulated prediction of 3003\,m. The configuration for this study is extracted directly from the publicly available example in the RocketPy 
-documentation~\cite{rocketpy_camoes}.
-
-The original Camões example computes parachute and air brake actuation directly in the controller callback using the simulation state vector, without a sensor model. This is representative of an open-loop trajectory tool, but not of real flight software, as an embedded FSW will never have access to the ground-truth simulation state, only to sensor readings, each with its own noise and error characteristics. Since RITL couples F Prime through RocketPy's sensor models rather than the state vector directly, it was not possible to reuse the flight logic present in the Camões example, necessitating the custom flight logic described in Section~\ref{flight-logic}.
-
-The comparative baseline in this study is a stand-alone RocketPy simulation, with no attached Orchestrator or F Prime FSW. All rocket configurations, including the motor and the environment, remain the same as in the RITL setups. The custom flight logic, including apogee detection, parachute deployment and the PI air brake controller, is translated into Python and injected directly into the controller callback using RocketPy's sensor models, ensuring that any measured difference between the baseline and RITL configuration reflects the coupling strategy alone. As the baseline involves no networked or hardware-driven components, its apogee and event timings are fully deterministic across repeated runs. It is only the wall-clock time that exhibits variation in its runs, which can be attributed to host scheduling noise.
-
-\subsection{Variable Selection}\label{variable-selection}
-The independent variables in this study are the coupling architecture (Lockstep, Snapshot or Rate Group) as described in Sections \ref{lockstep}--\ref{rate-group}, the execution context (SIL or HIL), the tick frequency of the \texttt{RateGroupDriver} (1, 5, 10, 25 and 50\,Hz varied only for the Rate Group Strategy), and the controller callback sampling rate (5, 10, 25, 35 and 50\,Hz varied only for the Non-SIL baseline, Lockstep and Snapshot). No full factorial test was performed; Section \ref{exp-setup} specifies which variables are varied in each of the four experiments.
-
-Unless an experiment explicitly varies one of the four timing parameters exposed by the framework as described in Section~\ref{exp-setup}, all are held fixed: the sensor model sampling rate, the parachute trigger sampling rate and the controller callback sampling rate at 10 Hz, and the solver time step at 0.001\,s for both minimum and maximum parameters.
-
-The dependent variables are:
-\begin{itemize}
-  \item \textbf{Apogee altitude (m):} the maximum altitude reached during the simulated flight, compared against the baseline to assess accuracy. Since the \texttt{AirbrakeController} actively varies the drag during the coasting phase, apogee is sensitive to the timing of actuation outputs, making it a prime indicator of coupling accuracy.
-
-  \item \textbf{Apogee time (s):} the simulation time at which the maximum altitude is reached, used as a reference point for evaluating parachute deployment timing.
-
-  \item \textbf{Drogue parachute deployment time (s):} the simulation time at which the drogue parachute is deployed, used to assess recovery event timing relative to apogee time.
-
-  \item \textbf{Main parachute deployment time (s):} the simulation time at which the main parachute is deployed, also used to assess recovery event timing.
-
-  \item \textbf{Wall-clock time (s):} the real-world time taken to complete one full simulation run, used to assess the overhead introduced by each coupling strategy.
-\end{itemize}
-
-
-
-\subsection{Experimental Setup} \label{exp-setup}
-
-Four controlled experiments are conducted. The first three are designed to test the hypotheses defined in Section \ref{hypotheses}, while the fourth investigates the sensitivity of the apogee error to the sample rate and the time step configuration. All experiments use the experiment runner by Karsten 
-et al.~\cite{karsten2026experiment-runner} to automate trial execution and result collection, with 10 runs per configuration, unless stated otherwise. 
-
-
-\subsubsection{Coupling Strategy Comparison}
-The three coupling strategies: Lockstep, Snapshot and Rate Group are evaluated in both SIL and HIL execution contexts. Rate Group is evaluated at 25Hz tick frequency, selected based on the results of the frequency sweep experiment described in Section~\ref{freq-sweep}, which showed diminishing accuracy gains beyond this point. In SIL, the FSW runs as a native process on the host machine. In HIL, the same FSW is cross-compiled for ARM64 and executed on a Raspberry Pi~4, connected to the host over a direct Ethernet link.
-
-\subsubsection{Rate Group Frequency Sweep}
-
-The Rate Group strategy is additionally evaluated across tick frequencies of 1, 5, 10, 25, and 50Hz in SIL and HIL, with 10 runs per frequency. This sweep characterises how the FSW execution rate affects apogee accuracy.
-
-
-\subsubsection{Fault Injection Scenario}
-The fault injection scenario targets the barometric sensor, the primary variable used by the \texttt{RecoveryController} to detect apogee. Using the \texttt{FaultInjector} class in the Orchestrator, a barometric freeze is injected at simulation time $t=10 s$, during the coasting phase, after motor burnout but before apogee. The fault injection experiment is evaluated using the Snapshot strategy executed in both SIL and HIL contexts. Snapshot is chosen as it represents a realistic middle ground among the three coupling strategies.
-
-% This experiment addresses RQ3 by testing whether the fallback recovery behaviour discussed in Section~\ref{flight-logic} deploys the drogue parachute at or near apogee and completes the full recovery sequence under sensor fault conditions in both SIL and HIL contexts.
-
-\subsubsection{Controller Callback Sampling Rate Sweep} \label{callback-exp}
-This experiment evaluates how the controller callback's sampling rate parameter affects apogee accuracy under the Lockstep and Snapshot strategies across sampling rate values of 5, 10, 25, 35 and 50\,Hz. Rate Group is excluded from this sweep, since it uses the clock-driven topology and is instead governed by the independent \texttt{RateGroupDriver} tick frequency evaluated separately. The Non-SIL baseline is also re-evaluated across the same rates, serving as a reference against which both strategies are compared at each rate. 
-
-This experiment also includes a brief check of solver time step sensitivity, evaluating the Non-SIL baseline and Snapshot strategy at solver time steps of 0.001, 0.005, 0.01 and 0.0001\,s, with a single run per time step rather than the 10 runs used elsewhere in this study, due to its exploratory scope and the considerable wall-clock cost of the finest step tested in particular. This limitation is discussed further in Section \ref{limitations}.
-
-
-\subsubsection{Hardware Configuration}
-Table~\ref{tab:hardware} lists the hardware specifications for the SIL and HIL execution environments.
-
-\begin{table}[h]
-\centering
-\small
-\begin{tabular}{lll}
-\toprule 
-& \textbf{SIL Host} & \textbf{HIL Target} \\
-\midrule
-Model & ASUS Zenbook 14 UX3405MA & Raspberry Pi 4B \\
-CPU & Intel Core Ultra 7 155H & BCM2711 Cortex-A72 \\
-RAM & 32.0 GiB & 8 GiB \\
-OS & Pop!\_OS 22.04 LTS & RPi OS (Debian Trixie) \\
-Link & --- & Ethernet \\
-\bottomrule
-\end{tabular}
-\caption{Hardware specifications for SIL and HIL execution environments.}
-\label{tab:hardware}
-\end{table}
-
-\noindent The RITL framework described in this section was successfully deployed and executed in both SIL and HIL execution contexts across all three coupling strategies, addressing RQ1.
-
-% \subsection{Replication Package}
-% All artefacts of this study are publicly available: the RITL framework, including the Orchestrator and experiment runner configurations, in the
-% \href{https://github.com/Krissal1234/rocket_in_the_loop/tree/msc_thesis_submission}{RITL repository}
-% (branch \texttt{msc\_thesis\_submission}). The F Prime flight software deployment is available in the \href{https://github.com/Krissal1234/ritl-fsw}{FSW repository}. The raw experimental data, results and informal trial discussed in Section \ref{implications} can be found in the \href{https://drive.google.com/drive/folders/1BfGlMNKu4F09ubLUr2foTuLzN3MWnQhx?usp=sharing}{data archive}.
+\textbf{Experiments.} We automate 10 runs per configuration with the experiment runner of Karsten et al.~\cite{karsten2026experiment-runner}.
+(1)~\emph{Coupling comparison:} all three strategies in SIL and HIL, with Rate Group at 25\,Hz, chosen from the sweep.
+(2)~\emph{Rate Group sweep:} 1--50\,Hz in SIL and HIL.
+(3)~\emph{Fault injection:} the \texttt{FaultInjector} freezes the barometer at $t=10$\,s, during the coast after burnout and before apogee, with the Snapshot strategy as a middle ground, in SIL and HIL.
+SIL runs on a laptop (Intel Core Ultra 7 155H, 32\,GiB, Pop!\_OS 22.04). HIL runs on a Raspberry Pi 4B (Cortex-A72, 8\,GiB, Raspberry Pi OS) connected to the host by a direct Ethernet link. We compare each configuration against the baseline with a two-sample Welch $t$-test at $\alpha=0.05$. Because variance is low in most conditions, we interpret accuracy against the 12\,m threshold.
