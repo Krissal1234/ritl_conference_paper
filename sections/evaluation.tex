@@ -77,4 +77,4 @@ Figure~\ref{fig:callback-sweep} shows mean apogee against callback rate for the 
 
 The baseline and Lockstep rise slightly at 25\,Hz. The baseline has no coupling, so we attribute this to the PI controller's sensitivity to the sampling rate.
 
-The solver-step check kept apogee within 0.1\,m of the default for steps of 0.001, 0.005 and 0.01\,s, for both the baseline and Snapshot, with wall-clock time falling as the step widened. A single run at 0.0001\,s took 237\,s and moved the apogee only from 3066.0\,m to 3066.8\,m, so the one-step delay shows little sensitivity to solver load in this range. Each step size was run once, so this result is indicative only.
+The solver-step check kept apogee within 0.1\,m of the default for steps of 0.001, 0.005 and 0.01\,s, for both the baseline and Snapshot in SIL, with wall-clock time falling as the step widened. A single run at 0.0001\,s took 237\,s and moved the apogee only from 3066.0\,m to 3066.8\,m, so the one-step delay shows little sensitivity to solver load in this range. Each step size was run once, so this result is indicative only.
