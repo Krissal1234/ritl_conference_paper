@@ -3,9 +3,9 @@ Simulation-based testing is standard in aerospace, where flight tests are expens
 
 In small spacecraft, Cols-Margenet et al.~\cite{colsmargenet2017modular} couple the Basilisk simulator to flight algorithms on a Raspberry Pi over TCP/IP in a closed loop, and Kiesbye et al.~\cite{kiesbye2019-moveII-cubsat} built a Simulink-based SIL/HIL environment for the MOVE-II CubeSat that is still used after launch to analyse in-flight issues and verify software updates before uplink.
 
-For HPR, the only prior work we found that connects RocketPy to embedded hardware is Netzel et al.~\cite{netzel-rocketpy-hil}. They replay precomputed RocketPy trajectories as sensor data over SPI to test apogee detection. This is open-loop: actuation cannot change the trajectory, so control behaviour and its effect on the trajectory remain untested.
+For HPR, the only prior work we found that connects RocketPy to embedded hardware is Netzel et al.~\cite{netzel-rocketpy-hil}. They replay precomputed RocketPy trajectories as sensor data over SPI to test apogee detection. This is open-loop, as actuation cannot change the trajectory, so control behaviour and its effect on the trajectory remain untested.
 
-General co-simulation frameworks coordinate black-box simulators through master algorithms~\cite{gomes2017cosimulation}. They assume simulators that a master can step, which neither RocketPy nor an F Prime FSW offers (Section~\ref{closed-loop-sim-env}), so RITL couples at RocketPy's controller callback instead.
+General co-simulation frameworks coordinate black-box simulators through master algorithms~\cite{gomes2017cosimulation}. They assume simulators that an orchestrator can step, which neither RocketPy nor an F Prime FSW offers (Section~\ref{closed-loop-sim-env}), so RITL couples at RocketPy's controller callback instead.
 
 \begin{table}[t]
 \centering
