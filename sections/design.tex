@@ -1,13 +1,29 @@
 \section{Experimental Design}\label{experiment-design}
-\textbf{Hypotheses.} $H_1$: strategies that decouple the FSW from each simulation step delay actuation and so overshoot the standalone baseline apogee, while Lockstep does not. $H_2$: HIL runs take longer in wall-clock time than SIL runs, because of Ethernet latency and the slower CPU. $H_3$: after a barometer freeze injected mid-flight, the FSW detects the fault and deploys the drogue near apogee through the IMU fallback, in both SIL and HIL. $H_1$ and $H_2$ address RQ2, and $H_3$ addresses RQ3.
+We evaluate RITL with controlled experiments. In each one we manipulate one or two factors, hold the rest of the setup fixed and compare every configuration against a control, the standalone RocketPy baseline described below. Table~\ref{tab:experiments} summarises the four experiments.
 
-\textbf{Rocket and baseline.} We use the Camões rocket, built by Rocket Experiment Division and launched at EuRoC 2023 (recorded apogee 3015\,m, RocketPy prediction 3003\,m), configured from RocketPy's public example~\cite{rocketpy_camoes}. That example computes actuation directly from the ground-truth state vector, which an embedded FSW never has, so its flight logic cannot be reused. We wrote the flight logic of Section~\ref{flight-logic} instead. The baseline is a standalone RocketPy simulation with the same rocket, motor and environment, in which that logic is translated to Python and runs inside the callback on RocketPy's sensor models. Any difference between baseline and RITL therefore comes from the coupling alone. The baseline has no networked or hardware components, so its apogee and event times are deterministic; only its wall-clock time varies.
+\begin{table}[t]
+\centering
+\caption{The four experiments. Each configuration is run 10 times, except the solver-step check (one run per step).}
+\label{tab:experiments}
+\small
+\begin{tabular}{@{}cp{2.15in}p{0.6in}@{}}
+\toprule
+ & \textbf{Manipulated factors (levels)} & \textbf{Addresses} \\
+\midrule
+1 & \emph{Coupling comparison:} strategy (Lockstep, Snapshot, Rate Group at 25\,Hz) $\times$ context (SIL, HIL) & $H_1$, $H_2$ \\
+2 & \emph{Rate Group sweep:} tick frequency (1, 5, 10, 25, 50\,Hz) $\times$ context & rate choice \\
+3 & \emph{Fault injection:} barometer freeze at $t{=}10$\,s, Snapshot $\times$ context & $H_3$ \\
+4 & \emph{Callback sweep:} callback rate (5, 10, 25, 35, 50\,Hz) $\times$ strategy (baseline, Lockstep, Snapshot); solver step (four values) & sensitivity \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\textbf{Variables.} We vary the coupling strategy, the execution context (SIL or HIL), the \texttt{RateGroupDriver} tick frequency (1, 5, 10, 25 and 50\,Hz, Rate Group only) and the controller callback rate (5, 10, 25, 35 and 50\,Hz, baseline, Lockstep and Snapshot only). The dependent variables are apogee altitude and time, drogue and main deployment times, and wall-clock time per run. Unless varied, the sensor-model rate, the parachute-trigger rate and the controller callback rate are fixed at 10\,Hz and the solver step at 0.001\,s.
+\textbf{Hypotheses.} Based on how the coupling strategies work (Section~\ref{coupling-strategies}), we state three hypotheses. $H_1$: strategies that decouple the FSW from each simulation step delay actuation and so overshoot the standalone baseline apogee, while Lockstep does not. $H_2$: HIL runs take longer in wall-clock time than SIL runs, because of Ethernet latency and the slower CPU. $H_3$: after a barometer freeze injected mid-flight, the FSW detects the fault and deploys the drogue near apogee through the IMU fallback, in both SIL and HIL. $H_1$ and $H_2$ address RQ2, and $H_3$ addresses RQ3.
 
-\textbf{Experiments.} We automate 10 runs per configuration (unless stated otherwise) with the experiment runner of Karsten et al.~\cite{karsten2026experiment-runner}.
-(1)~\emph{Coupling comparison:} all three strategies in SIL and HIL, with Rate Group at 25\,Hz, chosen from the sweep.
-(2)~\emph{Rate Group sweep:} 1--50\,Hz in SIL and HIL.
-(3)~\emph{Fault injection:} the \texttt{FaultInjector} freezes the barometer at $t=10$\,s, during the coast after burnout and before apogee, with the Snapshot strategy as a middle ground, in SIL and HIL.
-(4)~\emph{Callback-rate sweep:} the controller callback rate is varied for the baseline, Lockstep and Snapshot. Rate Group is excluded, since its FSW rate is set by the tick frequency. A brief solver-step check runs the baseline and Snapshot at steps of 0.001, 0.005, 0.01 and 0.0001\,s, one run each, because the check is exploratory and the finest step is expensive.
-SIL runs on a laptop (Intel Core Ultra 7 155H, 32\,GiB, Pop!\_OS 22.04). HIL runs on a Raspberry Pi 4B (Cortex-A72, 8\,GiB, Raspberry Pi OS) connected to the host by a direct Ethernet link. We compare each configuration against the baseline with a two-sample Welch $t$-test at $\alpha=0.05$. Because variance is low in most conditions, we interpret accuracy against the 12\,m threshold.
+\textbf{Rocket and baseline.} We use the Camões rocket of Section~\ref{s:intro}, configured from RocketPy's public example~\cite{rocketpy_camoes}. That example computes actuation directly from the ground-truth state vector, which an embedded FSW never has, so its flight logic cannot be reused. We wrote the flight logic of Section~\ref{flight-logic} instead. The control condition is a standalone RocketPy simulation with the same rocket, motor and environment, in which that logic is translated to Python and runs inside the callback on RocketPy's sensor models. Any difference between baseline and RITL therefore comes from the coupling alone. The baseline has no networked or hardware components, so its apogee and event times are deterministic; only its wall-clock time varies.
+
+\textbf{Variables.} The independent variables are the factors of Table~\ref{tab:experiments}. The dependent variables are apogee altitude and time, drogue and main deployment times, and wall-clock time per run. Everything else is held fixed in all runs: the rocket, motor, environment, flight logic and its constants, the sensor-model rate, the parachute-trigger rate and, unless varied, the controller callback rate (10\,Hz) and the solver step (0.001\,s). We do not run a full factorial design.
+
+\textbf{Procedure.} We automate all runs with the experiment runner of Karsten et al.~\cite{karsten2026experiment-runner}. Experiment~1 runs Rate Group at 25\,Hz, chosen from Experiment~2, where accuracy gains diminish beyond that frequency. Experiment~3 uses Snapshot, a middle ground between the blocking Lockstep and the clock-independent Rate Group, and freezes the barometer during the coast after burnout and before apogee. Experiment~4 excludes Rate Group, whose FSW rate is set by the tick frequency. Its solver-step check runs the baseline and Snapshot at 0.001, 0.005, 0.01 and 0.0001\,s, one run each, because it is exploratory and the finest step is expensive. SIL runs on a laptop (Intel Core Ultra 7 155H, 32\,GiB, Pop!\_OS 22.04). HIL runs on a Raspberry Pi 4B (Cortex-A72, 8\,GiB, Raspberry Pi OS) connected to the host by a direct Ethernet link.
+
+\textbf{Analysis.} We compare each configuration with the baseline using a two-sample Welch $t$-test at $\alpha=0.05$, which does not assume equal variances: the baseline is deterministic, while HIL Rate Group varies by several metres. Because variance is low in most conditions, even sub-metre differences are statistically significant. We therefore judge accuracy by effect size against the 12\,m threshold and report significance alongside it.
