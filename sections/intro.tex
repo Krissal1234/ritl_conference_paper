@@ -17,10 +17,10 @@ RQ1 is answered by a working implementation: RocketPy and F Prime exchange senso
 This paper makes four contributions:
 \begin{itemize}
 \item \textbf{C1:} RITL, to our knowledge the first framework to close the loop between RocketPy and a flight software framework, F Prime, running the same FSW in SIL and HIL.
-\item \textbf{C2:} Three coupling strategies for a simulator that offers only a synchronous callback, and an analysis showing that non-blocking coupling introduces a one-tick actuation delay by design.
+\item \textbf{C2:} Three coupling strategies for a simulator that offers only a synchronous callback, and an analysis showing that non-blocking coupling introduces an actuation delay of at least one step by design.
 \item \textbf{C3:} A controlled evaluation of their accuracy, deployment timing and wall-clock cost in SIL and HIL.
-\item \textbf{C4:} In-loop fault injection, with a barometer-freeze case that exposes recovery behaviour open-loop replay cannot show.
+\item \textbf{C4:} In-loop fault injection, with a barometer-freeze case that shows how a sensor fault affects both recovery timing and the trajectory.
 \end{itemize}
-Practically, teams can test the flight software they actually fly, on a laptop or on target hardware, before launch. Scientifically, the results quantify what each coupling choice costs in accuracy, timing and run time. The artefacts are open (Section~\ref{s:conclusion}).
+Practically, teams can test the flight software they fly, on a laptop or on target hardware, before launch. Scientifically, the results quantify what each coupling choice costs in accuracy, timing and run time. The artefacts are open (Section~\ref{s:conclusion}).
 
 Sections~\ref{s:background} and~\ref{s:related} give background and related work. Section~\ref{closed-loop-sim-env} presents the framework (RQ1), and Sections~\ref{experiment-design} and~\ref{s:evaluation} the experiments and results (RQ2, RQ3). Section~\ref{discussion} discusses implications and threats to validity, and Section~\ref{s:conclusion} concludes.
