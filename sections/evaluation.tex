@@ -1,4 +1,5 @@
 \section{Results}\label{s:evaluation}
+Experiments~1 to~4 are reported in Sections~\ref{coupling-results} to~\ref{callback-sample-rate}, in order.
 
 \begin{table*}[t]
 \centering
@@ -23,7 +24,7 @@ HIL Rate Group & 3069.33 $\pm$ 7.46 & 38.2 $\pm$ 1.7 & 24.91 $\pm$ 0.07 & 45.09 
 \end{table*}
 
 \subsection{Coupling Strategies and the One-Tick Delay}\label{coupling-results}
-Table~\ref{tab:summary} compares each configuration with the standalone baseline of 3061.94\,m.
+Table~\ref{tab:summary} compares each configuration with the standalone baseline of 3061.94\,m. The baseline lands above the 3000\,m target because the PI gains are untuned (Section~\ref{discussion}), which is common to all configurations.
 
 \emph{Accuracy.} Lockstep lands closest to the baseline: $-0.08$\,m in SIL and $-0.07$\,m in HIL ($p=0.0001$). The difference is statistically significant but negligible against the 12\,m threshold. Lockstep blocks at every callback, so each step uses the actuation computed from its own sensor reading. That is an idealised model no real hardware offers, but it validates flight-logic correctness.
 
@@ -45,7 +46,7 @@ The mean apogee error of every strategy stays below the 12\,m threshold in SIL a
 \end{figure}
 
 \subsection{Rate Group Frequency Sweep}\label{freq-sweep}
-Figure~\ref{fig:rate-apogee-freq} shows mean apogee against tick frequency, SIL and HIL combined. At 1\,Hz the FSW works on stale data and updates the air brakes once per second, and apogee overshoots by 209.56\,m (3271.5\,$\pm$\,59.0\,m). The error then falls monotonically: 101.19\,m at 5\,Hz, 27.69\,m at 10\,Hz, 5.61\,m at 25\,Hz and 4.02\,m at 50\,Hz. Gains diminish beyond 25\,Hz, which is why we used 25\,Hz in the strategy comparison.
+Figure~\ref{fig:rate-apogee-freq} shows mean apogee against tick frequency, SIL and HIL combined. At 1\,Hz the FSW works on stale data and updates the air brakes once per second, and apogee overshoots by 209.56\,m (3271.5\,$\pm$\,59.0\,m). A higher tick frequency gives the FSW fresher readings, so the lag shrinks and the error falls monotonically: 101.19\,m at 5\,Hz, 27.69\,m at 10\,Hz, 5.61\,m at 25\,Hz and 4.02\,m at 50\,Hz. Gains diminish beyond 25\,Hz, which is why we used 25\,Hz in the strategy comparison.
 
 \begin{figure}[t]
 \centering
@@ -76,6 +77,6 @@ Figure~\ref{fig:callback-sweep} shows mean apogee against callback rate for the 
 \label{fig:callback-sweep}
 \end{figure}
 
-The baseline and Lockstep share a small rise at 25\,Hz relative to 10\,Hz before falling again at 35 and 50\,Hz. The baseline has no coupling, so this cannot come from the delay. We attribute it to the PI controller's own sensitivity to discretisation at different sampling rates.
+The baseline and Lockstep share a small rise at 25\,Hz before falling again at 35 and 50\,Hz. The baseline has no coupling, so the delay cannot explain it; we attribute it to the PI controller's sensitivity to the sampling rate.
 
 The solver-step check kept apogee within 0.1\,m of the default for steps of 0.001, 0.005 and 0.01\,s, for both the baseline and Snapshot, with wall-clock time falling as the step widened. A single run at 0.0001\,s took 237\,s and moved the apogee only from 3066.0\,m to 3066.8\,m, so the one-tick delay shows little sensitivity to solver load in this range. Each step size was run once, so this result is indicative only.
