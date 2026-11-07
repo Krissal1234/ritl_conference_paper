@@ -5,7 +5,7 @@ In small spacecraft, Cols-Margenet et al.~\cite{colsmargenet2017modular} couple 
 
 For HPR, the only prior work we found that connects RocketPy to embedded hardware is Netzel et al.~\cite{netzel-rocketpy-hil}. They replay precomputed RocketPy trajectories as sensor data over SPI to test apogee detection. This is open-loop: actuation cannot change the trajectory, so control behaviour and its effect on the trajectory remain untested.
 
-General co-simulation frameworks coordinate black-box simulators through master algorithms~\cite{gomes2017cosimulation}. They do not apply directly to RocketPy and F Prime, for the reasons given in Section~\ref{closed-loop-sim-env}.
+General co-simulation frameworks coordinate black-box simulators through orchestration algorithms~\cite{gomes2017cosimulation}. They do not apply directly to RocketPy and F Prime, for the reasons given in Section~\ref{closed-loop-sim-env}.
 
 \begin{table}[t]
 \centering
