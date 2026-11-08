@@ -30,7 +30,7 @@ Snapshot overshoots by $+4.04$\,m in SIL and $+4.06$\,m in HIL. The overshoot is
 
 Rate Group at 25\,Hz overshoots by $+3.84$\,m in SIL and $+7.39$\,m in HIL. The SIL result resembles Snapshot, since both are non-blocking. The variance is higher because the FSW clock is independent of RocketPy's callback, so the buffer may hold an output computed from an older reading. In HIL the standard deviation reaches 7.46\,m against 0.19\,m in SIL, which we attribute to clock mismatch compounding with the Pi's slower CPU and the Ethernet latency. These results support $H_1$: Lockstep shows negligible overshoot, while both non-blocking strategies delay actuation and overshoot consistently in SIL and HIL.
 
-All six differences from the baseline are statistically significant, with $p\le0.012$. The mean apogee error of every strategy stays below the 12\,m threshold in SIL and HIL. The mean hides the spread for HIL Rate Group: with a standard deviation of 7.46\,m over 10 runs, we cannot rule out individual runs above 12\,m. For that configuration the threshold is met on average, not guaranteed per run.
+All six differences from the baseline are statistically significant, with $p\le0.012$. The mean apogee error of every strategy stays below the 12\,m threshold in SIL and HIL. The mean hides the spread for HIL Rate Group: with a standard deviation of 7.46\,m over 10 runs, individual runs may exceed 12\,m, so the threshold is met on average, not guaranteed per run.
 
 \emph{Deployment timing.} Lockstep and Snapshot deploy the drogue at $t\approx25.00$\,s and the main parachute at $t\approx44.60$\,s in both SIL and HIL, matching the baseline. Rate Group deploys the drogue earlier (24.84\,s in SIL, 24.91\,s in HIL) and the main parachute later (45.18\,s and 45.09\,s), with standard deviations up to 0.28\,s, consistent with its timing non-determinism.
 
@@ -38,17 +38,17 @@ All six differences from the baseline are statistically significant, with $p\le0
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.84\columnwidth]{figures/results/wall_time_violin.png}
+\includegraphics[width=0.92\columnwidth]{figures/results/wall_time_violin.png}
 \caption{Wall-clock time per run for each configuration; dots are individual runs.}
 \label{fig:wall_time_violin}
 \end{figure}
 
 \subsection{Rate Group Frequency Sweep}\label{freq-sweep}
-In Experiment~2, Figure~\ref{fig:rate-apogee-freq} shows mean apogee against tick frequency, SIL and HIL combined. At 1\,Hz the FSW works on stale data and updates the air brakes once per second, and apogee overshoots by 209.56\,m (3271.5\,$\pm$\,59.0\,m). A higher tick frequency gives the FSW fresher readings, so the lag shrinks and the error falls monotonically: 101.19\,m at 5\,Hz, 27.69\,m at 10\,Hz, 5.61\,m at 25\,Hz and 4.02\,m at 50\,Hz. Gains diminish beyond 25\,Hz, which is why we used 25\,Hz in the strategy comparison. The tick timer runs on the wall clock, so these values describe our hosts (Section~\ref{discussion}).
+In Experiment~2, Figure~\ref{fig:rate-apogee-freq} shows mean apogee against tick frequency, SIL and HIL combined. At 1\,Hz the FSW works on stale data and updates the air brakes once per second, and apogee overshoots by 209.56\,m (3271.5\,$\pm$\,59.0\,m). A higher tick frequency gives the FSW fresher readings, so the lag shrinks and the error falls monotonically: 101.19\,m at 5\,Hz, 27.69\,m at 10\,Hz, 5.61\,m at 25\,Hz and 4.02\,m at 50\,Hz. Gains diminish beyond 25\,Hz, the rate we used in the strategy comparison. The tick timer runs on the wall clock, so these values describe our hosts (Section~\ref{discussion}).
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.70\columnwidth]{figures/results/rategroup_apogee_vs_freq.png}
+\includegraphics[width=0.86\columnwidth]{figures/results/rategroup_apogee_vs_freq.png}
 \caption{Mean apogee against Rate Group tick frequency, SIL and HIL combined.}
 \label{fig:rate-apogee-freq}
 \end{figure}
@@ -58,19 +58,19 @@ In Experiment~3, Figure~\ref{fig:fault_injection} shows all 20 runs, SIL and HIL
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.74\columnwidth]{figures/results/fault_injection.png}
+\includegraphics[width=0.90\columnwidth]{figures/results/fault_injection.png}
 \caption{Fault injection across all 20 runs. The barometer freeze at $t=10$\,s triggers the IMU fallback, which deploys the drogue 0.1\,s after true apogee.}
 \label{fig:fault_injection}
 \end{figure}
 
-After the freeze, the drogue fires 0.1\,s after apogee instead of 1.5\,s (Table~\ref{tab:summary}), because the IMU path reacts as soon as acceleration drops below the free-fall threshold, whereas barometric detection waits for 10 consecutive rising readings. The freeze also changes the trajectory itself: with altitude frozen, \texttt{AirbrakeController} cannot compute a valid predicted apogee and under-deploys the brakes, so true apogee is 3069\,m, about 3\,m above the nominal Snapshot value. Only a closed loop captures this, because the faulty FSW output feeds back into the flight.
+After the freeze, the drogue fires 0.1\,s after apogee instead of 1.5\,s (Table~\ref{tab:summary}), because the IMU path reacts as soon as acceleration drops below the free-fall threshold, whereas barometric detection waits for 10 consecutive rising readings. The freeze also changes the trajectory: with altitude frozen, \texttt{AirbrakeController} cannot compute a valid predicted apogee and under-deploys the brakes, so true apogee is 3069\,m, about 3\,m above the nominal Snapshot value. Only a closed loop captures this, because the faulty FSW output feeds back into the flight.
 
 \subsection{Controller Callback Rate and Solver Step}\label{callback-sample-rate}
 In Experiment~4a, Figure~\ref{fig:callback-sweep} shows mean apogee against callback rate for the baseline, Lockstep and Snapshot, with SIL and HIL averaged because they gave near-identical results at every rate. Lockstep follows the baseline within about 0.1\,m at every rate, consistent with its zero-step delay. Snapshot overshoots at every rate, and the overshoot shrinks as the callback rate rises: from about 4.8\,m at 5\,Hz to 1.3\,m at 50\,Hz, with the largest drop between 10 and 25\,Hz (4.2\,m to 1.9\,m). The practical cost of the one-step delay therefore falls as the loop runs faster.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.74\columnwidth]{figures/results/apogee_by_strategy.png}
+\includegraphics[width=0.90\columnwidth]{figures/results/apogee_by_strategy.png}
 \caption{Mean apogee against controller callback rate for the baseline, Lockstep and Snapshot (SIL and HIL averaged).}
 \label{fig:callback-sweep}
 \end{figure}

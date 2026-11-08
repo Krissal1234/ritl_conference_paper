@@ -3,7 +3,7 @@ We evaluate RITL with controlled experiments. In each one we manipulate a few fa
 
 \begin{table}[t]
 \centering
-\caption{The experiments and the independent variables each one varies. Each configuration is run 10 times, except Experiment~4b, which is run once per solver step.}
+\caption{The experiments and the independent variables each varies. Each configuration runs 10 times, except Experiment~4b, which runs once per solver step.}
 \label{tab:experiments}
 \small
 \begin{tabular}{@{}cp{1.7in}p{0.95in}@{}}
@@ -20,7 +20,7 @@ We evaluate RITL with controlled experiments. In each one we manipulate a few fa
 \end{table}
 \textbf{Hypotheses.} Based on how the coupling strategies work (Section~\ref{coupling-strategies}), we state three hypotheses. $H_1$: strategies that decouple the FSW from each simulation step delay actuation and so overshoot the standalone baseline apogee, while Lockstep does not. $H_2$: HIL runs take longer in wall-clock time than SIL runs, because of Ethernet latency and the slower CPU. $H_3$: after a barometer freeze injected mid-flight, the FSW detects the fault and deploys the drogue near apogee through the IMU fallback, in both SIL and HIL. $H_1$ and $H_2$ address RQ2, and $H_3$ addresses RQ3.
 
-\textbf{Rocket and baseline.} We use the Camões rocket of Section~\ref{s:intro}, configured from RocketPy's public example~\cite{rocketpy_camoes}. That example computes actuation directly from the ground-truth state vector, which an embedded FSW never has, so its flight logic cannot be reused. We wrote the flight logic of Section~\ref{flight-logic} instead. The control condition is a standalone RocketPy simulation with the same rocket, motor and environment, in which that logic is translated to Python and runs inside the callback on RocketPy's sensor models. Any difference between baseline and RITL therefore comes from the coupling alone. The baseline has no networked or hardware components, so its apogee and event times are deterministic; only its wall-clock time varies.
+\textbf{Rocket and baseline.} We use the Camões rocket of Section~\ref{s:intro}, configured from RocketPy's public example~\cite{rocketpy_camoes}. That example computes actuation directly from the ground-truth state vector, which an embedded FSW never has, so its flight logic cannot be reused. We wrote the flight logic of Section~\ref{flight-logic} instead. The control condition is a standalone RocketPy simulation with the same rocket, motor and environment, in which that logic is translated to Python and runs inside the callback on RocketPy's sensor models. Any difference between baseline and RITL comes from the coupling alone. The baseline has no networked or hardware components, so its apogee and event times are deterministic; only its wall-clock time varies.
 
 \textbf{Variable Selection.} The independent variables are the coupling strategy, SIL or HIL, the Rate Group tick frequency, the controller callback rate, the solver step and the injected fault, which is none or a barometer freeze at $t=10$\,s. Table~\ref{tab:experiments} shows which experiment varies which. The dependent variables are apogee altitude and time, drogue and main deployment times, and wall-clock time per run. Everything else is fixed: the rocket, motor, environment, flight logic and its constants, the sensor-model and parachute-trigger rates and, unless varied, the callback rate of 10\,Hz, the solver step of 0.001\,s and the tick frequency of 25\,Hz. We do not run a full factorial design.
 

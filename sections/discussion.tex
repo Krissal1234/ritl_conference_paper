@@ -3,7 +3,7 @@
 \subsection{Implications for Student Teams}
 The right coupling strategy depends on the validation goal. Lockstep suits checking flight-logic correctness. With no actuation delay it gives the idealised closed-loop response of model-based tools such as Simulink, but the code under test is the code that flies, with no code-generation step or reimplementation from block diagrams. Snapshot and Rate Group suit timing validation, since both add an actuation delay as embedded execution does, with Snapshot's delay fixed at one callback step.
 
-Timing parameters should mirror the target. The Rate Group tick frequency, the controller callback rate and the parachute-trigger rate all stand for the control-loop frequency of the flight computer and should match the loop a team runs. The sensor-model rate should follow the sensor datasheet, and the solver step only needs to be fine enough for accurate physics.
+Timing parameters should mirror the target. The Rate Group tick frequency, the controller callback rate and the parachute-trigger rate all represent the flight computer's control-loop frequency and should match it. The sensor-model rate should follow the sensor datasheet, and the solver step only needs to be fine enough for accurate physics.
 
 The same FSW deployment ran in SIL and HIL with a recompilation only, which lowers the barrier to HIL testing. Fault injection lets teams exercise recovery logic against failures that would otherwise surface in flight, without touching the FSW.
 
