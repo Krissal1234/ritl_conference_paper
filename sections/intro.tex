@@ -8,7 +8,7 @@ These tools are mature in their domains, but the rocket simulators among them ar
 This paper presents RITL (Rocket in the Loop), which closes that loop. We instantiate it with RocketPy and F Prime, coupled through a Python Orchestrator that keeps the interface independent of both, so either side can be replaced. RocketPy is a continuous-time simulator and F Prime is discrete and event-driven, so the coupling is a heterogeneous co-simulation problem~\cite{gomes2017cosimulation}. The Orchestrator supports three coupling strategies that trade synchronisation against timing realism and wall-clock cost, runs the same FSW in SIL and HIL, and injects faults inside the loop. We investigate three research questions (RQ):
 \begin{itemize}
 \item \textbf{RQ1:} How can a closed-loop simulation environment for HPR flight software be designed and implemented using RocketPy and F Prime?
-\item \textbf{RQ2:} How do the coupling strategy and whether the FSW runs in SIL or HIL affect apogee accuracy, parachute deployment timing and wall-clock cost?
+\item \textbf{RQ2:} How do the coupling strategy and the choice of SIL or HIL affect apogee accuracy, parachute deployment timing and wall-clock cost?
 \item \textbf{RQ3:} Can the framework inject a sensor fault during flight, and does the FSW recover so that parachute deployment still succeeds?
 \end{itemize}
 
