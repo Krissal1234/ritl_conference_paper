@@ -3,7 +3,7 @@ Simulation-based testing is standard in aerospace, where flight tests are expens
 
 In small spacecraft, Cols-Margenet et al.~\cite{colsmargenet2017modular} couple the Basilisk simulator to flight algorithms on a Raspberry Pi over TCP/IP in a closed loop, and Kiesbye et al.~\cite{kiesbye2019-moveII-cubsat} built a Simulink-based SIL/HIL environment for the MOVE-II CubeSat that is still used after launch to analyse in-flight issues and verify software updates before uplink.
 
-For HPR, the prior work we found that connects RocketPy to embedded software or hardware is open-loop. Netzel et al.~\cite{netzel-rocketpy-hil} replay precomputed RocketPy trajectories as sensor data over SPI to test apogee detection. The open-source AvionicsSimulation project~\cite{avionicssimulation} streams RocketPy sensor data to firmware in SIL over TCP and in HIL over a serial link, and its documentation does not describe actuation feeding back. In both, actuation cannot change the trajectory, so control behaviour and its effect on the trajectory remain untested.
+For HPR, the only prior work we found that connects RocketPy to embedded hardware is Netzel et al.~\cite{netzel-rocketpy-hil}. They replay precomputed RocketPy trajectories as sensor data over SPI to test apogee detection. This is open-loop: actuation cannot change the trajectory, so control behaviour and its effect on the trajectory remain untested.
 
 \begin{table}[t]
 \centering
@@ -26,4 +26,4 @@ Netzel et al. (rocket) & RocketPy replay $\rightarrow$ apogee detection & HIL & 
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:related} summarises related work in this area. Closed-loop testing of flight software against a simulator is established in other domains, but none of these works couples an HPR simulator with a flight software framework. Existing HPR tools remain open-loop, and the SIL/HIL setups above are built around specific simulators such as X-Plane or Simulink. The novelty of RITL is this instantiation for HPR, with RocketPy and F Prime in SIL and HIL, together with an analysis of how the coupling strategy affects accuracy and timing and with in-loop fault injection.
+Closed-loop testing of flight software against a simulator is established in other domains (Table~\ref{tab:related}), but none of these works couples an HPR simulator with a flight software framework. Existing HPR tools remain open-loop, and the SIL/HIL setups above are built around specific simulators such as X-Plane or Simulink. The novelty of RITL is this instantiation for HPR, with RocketPy and F Prime in SIL and HIL, together with an analysis of how the coupling strategy affects accuracy and timing and with in-loop fault injection.
