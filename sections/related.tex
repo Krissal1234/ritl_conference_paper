@@ -5,8 +5,6 @@ In small spacecraft, Cols-Margenet et al.~\cite{colsmargenet2017modular} couple 
 
 For HPR, the only prior work we found that connects RocketPy to embedded hardware is Netzel et al.~\cite{netzel-rocketpy-hil}. They replay precomputed RocketPy trajectories as sensor data over SPI to test apogee detection. This is open-loop: actuation cannot change the trajectory, so control behaviour and its effect on the trajectory remain untested.
 
-General co-simulation frameworks coordinate black-box simulators through orchestration algorithms~\cite{gomes2017cosimulation}. They do not apply directly to RocketPy and F Prime, for the reasons given in Section~\ref{closed-loop-sim-env}.
-
 \begin{table}[t]
 \centering
 \caption{Closed-loop verification work discussed above.}
@@ -28,4 +26,4 @@ Netzel et al. (rocket) & RocketPy replay $\rightarrow$ apogee detection & HIL & 
 \end{tabular}
 \end{table}
 
-Closed-loop testing of flight software against a simulator is therefore established in other domains, but none of these works couples an HPR simulator with a flight software framework. Existing HPR tools remain open-loop, and the SIL/HIL setups above are built around specific simulators such as X-Plane or Simulink. The novelty of RITL is this instantiation for HPR, with RocketPy and F Prime in SIL and HIL, together with an analysis of how the coupling strategy affects accuracy and timing and with in-loop fault injection.
+Table \ref{s:related} summarises related work in this area. Closed-loop testing of flight software against a simulator is established in other domains, but none of these works couples an HPR simulator with a flight software framework. Existing HPR tools remain open-loop, and the SIL/HIL setups above are built around specific simulators such as X-Plane or Simulink. The novelty of RITL is this instantiation for HPR, with RocketPy and F Prime in SIL and HIL, together with an analysis of how the coupling strategy affects accuracy and timing and with in-loop fault injection.

@@ -3,21 +3,21 @@ We evaluate RITL with controlled experiments. In each one we manipulate one or t
 
 \begin{table}[t]
 \centering
-\caption{The four experiments. Each configuration is run 10 times, except the solver-step check (one run per step).}
+\caption{The experiments and the independent variables each one varies. Each configuration is run 10 times, except the solver-step check, which is run once per step.}
 \label{tab:experiments}
 \small
-\begin{tabular}{@{}cp{2.15in}p{0.6in}@{}}
+\begin{tabular}{@{}cp{1.7in}p{0.95in}@{}}
 \toprule
- & \textbf{Manipulated factors (levels)} & \textbf{Addresses} \\
+\textbf{Exp.} & \textbf{Independent variables and levels} & \textbf{Purpose} \\
 \midrule
-1 & \emph{Coupling comparison:} strategy (Lockstep, Snapshot, Rate Group at 25\,Hz) $\times$ SIL \& HIL & $H_1$, $H_2$ \\
-2 & \emph{Rate Group sweep:} tick frequency (1, 5, 10, 25, 50\,Hz) $\times$  SIL \& HIL & rate choice \\
-3 & \emph{Fault injection:} barometer freeze at $t{=}10$\,s, Snapshot $\times$  SIL \& HIL & $H_3$ \\
-4 & \emph{Callback sweep:} callback rate (5, 10, 25, 35, 50\,Hz) $\times$ strategy (baseline, Lockstep, Snapshot); solver step (four values) & sensitivity \\
+1 & Strategy: Lockstep, Snapshot, Rate Group at 25\,Hz; each in SIL and HIL & Compare strategies, $H_1$ and $H_2$ \\
+2 & Tick frequency: 1, 5, 10, 25, 50\,Hz; each in SIL and HIL & Justify the Rate Group frequency \\
+3 & Fault: barometer freeze at $t{=}10$\,s; Snapshot in SIL and HIL & Test fault recovery, $H_3$ \\
+4a & Callback rate: 5, 10, 25, 35, 50\,Hz; Lockstep and Snapshot, each in SIL and HIL, and the baseline & Sensitivity to callback rate \\
+4b & Solver step: 0.0001, 0.001, 0.005, 0.01\,s; Snapshot in SIL, and the baseline & Sensitivity to solver step \\
 \bottomrule
 \end{tabular}
 \end{table}
-
 \textbf{Hypotheses.} Based on how the coupling strategies work (Section~\ref{coupling-strategies}), we state three hypotheses. $H_1$: strategies that decouple the FSW from each simulation step delay actuation and so overshoot the standalone baseline apogee, while Lockstep does not. $H_2$: HIL runs take longer in wall-clock time than SIL runs, because of Ethernet latency and the slower CPU. $H_3$: after a barometer freeze injected mid-flight, the FSW detects the fault and deploys the drogue near apogee through the IMU fallback, in both SIL and HIL. $H_1$ and $H_2$ address RQ2, and $H_3$ addresses RQ3.
 
 \textbf{Rocket and baseline.} We use the Camões rocket of Section~\ref{s:intro}, configured from RocketPy's public example~\cite{rocketpy_camoes}. That example computes actuation directly from the ground-truth state vector, which an embedded FSW never has, so its flight logic cannot be reused. We wrote the flight logic of Section~\ref{flight-logic} instead. The control condition is a standalone RocketPy simulation with the same rocket, motor and environment, in which that logic is translated to Python and runs inside the callback on RocketPy's sensor models. Any difference between baseline and RITL therefore comes from the coupling alone. The baseline has no networked or hardware components, so its apogee and event times are deterministic; only its wall-clock time varies.
