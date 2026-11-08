@@ -34,11 +34,11 @@ All six differences from the baseline are statistically significant, with $p\le0
 
 \emph{Deployment timing.} Lockstep and Snapshot deploy the drogue at $t\approx25.00$\,s and the main parachute at $t\approx44.60$\,s in both SIL and HIL, matching the baseline. Rate Group deploys the drogue earlier (24.84\,s in SIL, 24.91\,s in HIL) and the main parachute later (45.18\,s and 45.09\,s), with standard deviations up to 0.28\,s, consistent with its timing non-determinism.
 
-\emph{Wall-clock time.} Every strategy adds overhead to the 27.0\,s baseline. Lockstep is slowest (44.9\,s SIL, 48.8\,s HIL) because it blocks at every callback. Snapshot (36.4\,s, 41.8\,s) and Rate Group (36.0\,s, 38.2\,s) never block. HIL is slower than SIL for every strategy, from the Ethernet round trip and the Pi's slower CPU, which supports $H_2$. For Rate Group, however, the 2.2\,s gap is smaller than the 4.5\,s run-to-run spread in SIL. Figure~\ref{fig:wall_time_violin} shows the individual runs: the SIL Rate Group spread comes from two slow runs above 43\,s, while the other runs sit near 33--35\,s.
+\emph{Wall-clock time.} Every strategy adds overhead to the 27.0\,s baseline (Fig. \ref{fig:wall_time_violin}). Lockstep is slowest (44.9\,s SIL, 48.8\,s HIL) because it blocks at every callback. Snapshot (36.4\,s, 41.8\,s) and Rate Group (36.0\,s, 38.2\,s) never block. HIL is slower than SIL for every strategy, from the Ethernet round trip and the Pi's slower CPU, which supports $H_2$. For Rate Group, however, the 2.2\,s gap is smaller than the 4.5\,s run-to-run spread in SIL. Figure~\ref{fig:wall_time_violin} shows the individual runs: the SIL Rate Group spread comes from two slow runs above 43\,s, while the other runs sit near 33--35\,s.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.74\columnwidth]{figures/results/wall_time_violin.png}
+\includegraphics[width=0.84\columnwidth]{figures/results/wall_time_violin.png}
 \caption{Wall-clock time per run for each configuration; dots are individual runs.}
 \label{fig:wall_time_violin}
 \end{figure}
