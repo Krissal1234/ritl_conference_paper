@@ -3,7 +3,7 @@
 \subsection{Coupling Strategies and the One-Step Delay}\label{coupling-results}
 In Experiment~1, Table~\ref{tab:summary} compares each configuration with the standalone baseline apogee of 3061.94\,m. The baseline lands above the 3000\,m target because the PI gains are untuned, as tuning is out of scope (Section~\ref{discussion}). This offset is common to all configurations.
 
-\emph{Accuracy.} Lockstep lands closest to the baseline: $-0.08$\,m in SIL and $-0.07$\,m in HIL. The difference is negligible against the 12\,m threshold, and Lockstep validates the flight logic. Lockstep blocks at every callback, so each step uses the actuation computed from its own sensor reading.
+\emph{Accuracy.} Lockstep lands closest to the baseline: $-0.08$\,m in SIL and $-0.07$\,m in HIL. The difference is negligible against the 12\,m threshold, and Lockstep validates the flight logic.
 
 Snapshot overshoots by $+4.04$\,m in SIL and $+4.06$\,m in HIL. The overshoot is structural. At callback $n$, the Orchestrator sends the packet and returns the actuation computed at callback $n-1$, without waiting for the FSW. The response to callback $n$ is applied only at $n+1$, so actuation is always one step behind the sensor reading that triggered it. The predicted apogee and the air brake level lag the true state, and the PI controller under-corrects during the coast. The delay equals one callback step, 0.1\,s at 10\,Hz, so the overshoot depends on the callback rate. Section~\ref{callback-sample-rate} shows that it shrinks as the controller callback rate rises.
 
@@ -18,9 +18,9 @@ Rate Group at 25\,Hz overshoots by $+3.84$\,m in SIL and $+7.39$\,m in HIL. The 
 
 All six differences from the baseline are statistically significant, with $p\le0.012$. The mean apogee error of every strategy stays below the 12\,m threshold in SIL and HIL. The mean hides the spread for HIL Rate Group: with a standard deviation of 7.46\,m over 10 runs, individual runs may exceed 12\,m, so the threshold is met on average, not guaranteed per run.
 
-\emph{Deployment timing.} Lockstep and Snapshot deploy the drogue parachute at $t\approx25.00$\,s and the main parachute at $t\approx44.60$\,s in both SIL and HIL, matching the baseline. Rate Group deploys the drogue earlier (24.84\,s in SIL, 24.91\,s in HIL) and the main parachute later (45.18\,s and 45.09\,s), with standard deviations up to 0.28\,s, consistent with its timing non-determinism.
+\emph{Deployment timing.} Lockstep and Snapshot deploy the drogue parachute at $t\approx25.00$\,s and the main parachute at $t\approx44.60$\,s in SIL and HIL, within 0.05\,s of the baseline. Rate Group deploys the drogue up to 0.17\,s earlier and the main parachute up to 0.58\,s later, with standard deviations up to 0.28\,s, consistent with its timing non-determinism. Nine of the twelve comparisons are statistically significant ($p\le0.037$), but Lockstep and Snapshot stay well inside one callback step, while Rate Group's main-parachute shift does not. This supports $H_4$.
 
-\emph{Wall-clock time.} Every strategy adds overhead to the 26.9\,s baseline (Fig.~\ref{fig:wall_time_violin}). Lockstep is slowest (44.9\,s SIL, 48.8\,s HIL) because it blocks at every callback. Snapshot (36.4\,s, 41.8\,s) and Rate Group (36.0\,s, 38.2\,s) never block. HIL is slower than SIL for every strategy, from the Ethernet round trip and the Pi's slower CPU, which supports $H_2$. For Rate Group, however, the 2.2\,s gap is smaller than the 4.5\,s run-to-run spread in SIL. In the individual runs, the SIL Rate Group spread comes from two slow runs above 43\,s, while the others sit near 33--35\,s.
+\emph{Wall-clock time.} Every strategy adds overhead to the 26.9\,s baseline (Fig.~\ref{fig:wall_time_violin}). Lockstep is slowest (44.9\,s SIL, 48.8\,s HIL) because it blocks at every callback. Snapshot (36.4\,s, 41.8\,s) and Rate Group (36.0\,s, 38.2\,s) never block. HIL is slower than SIL for every strategy, from the Ethernet round trip and the Pi's slower CPU, which supports $H_2$. For Rate Group, however, the 2.2\,s gap is smaller than the 4.5\,s run-to-run spread in SIL.
 
 
 
