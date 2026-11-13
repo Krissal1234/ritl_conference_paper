@@ -10,7 +10,7 @@ Co-simulation normally assumes simulators that an orchestrator can advance and t
 \begin{minipage}[b]{0.50\textwidth}\centering
 \includegraphics[width=0.8\linewidth]{figures/ritl_fsw_sensors.pdf}\\[2pt]{\small (c)}
 \end{minipage}
-\caption{The RITL architecture. (a) RocketPy, the Orchestrator and the F Prime FSW. (b) The sensor-driven FSW topology (Lockstep, Snapshot). (c) The clock-driven topology (Rate Group). Shaded components are active, white are passive.}
+\caption{The RITL architecture. (a) RocketPy, the Orchestrator and the F Prime FSW. (b) The sensor-driven FSW topology (Lockstep, Snapshot). (c) The clock-driven topology (Rate Group). Shaded components are active, white are passive. Blue arrows show the sensor path and red arrows the actuation path.}
 \label{fig:architecture-diagram}
 \end{figure*}
 \subsection{Architecture}\label{framework-arch}
@@ -18,7 +18,7 @@ RITL places a Python Orchestrator between RocketPy and the F Prime FSW (Fig.~\re
 
 The Orchestrator is also a natural place to intercept sensor data: a \texttt{FaultInjector} module alters outgoing sensor packets before they reach the FSW. We evaluate one fault, a barometer freeze, in which the pressure reading is captured and held constant in all following packets. Neither RocketPy nor the FSW needs to change.
 
-\emph{Communication.} RocketPy and the Orchestrator communicate over ZeroMQ, which is language-agnostic, keeps SIL overhead low over loopback on one host and allows separate hosts. The Orchestrator talks to F Prime over TCP. TCP gives the reliable, ordered delivery that Lockstep requires, and the same code runs over loopback in SIL and over a physical Ethernet link in HIL. The cost is TCP's connection overhead.
+\emph{Communication.} RocketPy and the Orchestrator communicate over ZeroMQ, which is language-agnostic, keeps SIL overhead low over loopback on one host and allows separate hosts. The Orchestrator talks to F Prime over TCP. TCP gives the reliable, ordered delivery that the Lockstep coupling strategy requires, and the same code runs over loopback in SIL and over a physical Ethernet link in HIL. The cost is TCP's connection overhead.
 
 \emph{Data flow.} At each callback, RocketPy's accelerometer, gyroscope and barometer models produce readings. They travel with the simulation time $t$ through the Orchestrator to F Prime, where the FSW receives them as if they came from physical sensors. The return path is more constrained, because the callback needs a synchronous return value. The Orchestrator keeps an \emph{actuation buffer} holding the last output received from F Prime: an air brake level in $[0,1]$ and two deployment flags for the drogue and main parachutes. How the buffer is used at callback time depends on the coupling strategy (Section~\ref{coupling-strategies}).
 

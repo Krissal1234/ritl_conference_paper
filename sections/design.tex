@@ -1,9 +1,9 @@
 \section{Experimental Design}\label{experiment-design}
-We evaluate RITL with controlled experiments. In each one we manipulate a few factors, hold the rest of the setup fixed and compare every configuration against a control, the standalone RocketPy baseline described below. Table~\ref{tab:experiments} summarises the four experiments.
+We evaluate RITL with controlled experiments. In each one, we manipulate a few factors, hold the rest of the setup fixed and compare every configuration against a control: the standalone RocketPy baseline described below. Table~\ref{tab:experiments} summarises the four experiments.
 
 \begin{table}[t]
 \centering
-\caption{The experiments and the independent variables each varies. Each configuration runs 10 times, except Experiment~4b, which runs once per solver step.}
+\caption{The experiments and the independent variables each vary. Each configuration runs 10 times, except Experiment~4b, which runs once per solver step.}
 \label{tab:experiments}
 \small
 \begin{tabular}{@{}cp{1.7in}p{0.95in}@{}}
@@ -26,4 +26,26 @@ We evaluate RITL with controlled experiments. In each one we manipulate a few fa
 
 \textbf{Procedure.} We automate all runs with the experiment runner of Karsten et al.~\cite{karsten2026experiment-runner}. Experiment~1 runs Rate Group at 25\,Hz, chosen from Experiment~2, where accuracy gains diminish beyond that frequency. Experiment~3 uses Snapshot, a middle ground between the blocking Lockstep and the clock-independent Rate Group, and freezes the barometer during the coast after burnout and before apogee. Experiment~4a excludes Rate Group, whose FSW rate is set by the tick frequency. Experiment~4b runs the baseline and Snapshot in SIL at solver steps of 0.0001, 0.001, 0.005 and 0.01\,s, one run each, because it is exploratory and the finest step is expensive. Wall-clock time is measured around the RocketPy run, from before the flight is built until it returns, so it excludes FSW start-up, and runs are not paced to real time. Runs execute in a fixed order, one pass over all configurations per repetition, with a 3\,s pause; the FSW and Orchestrator are restarted for every run. SIL runs on a laptop (Intel Core Ultra 7 155H, 32\,GiB, Pop!\_OS 22.04). HIL runs on a Raspberry Pi 4B (Cortex-A72, 8\,GiB, Raspberry Pi OS) connected to the host by a direct Ethernet link.
 
-\textbf{Analysis.} We compare each configuration with the baseline using a two-sample Welch $t$-test at $\alpha=0.05$, which does not assume equal variances: the baseline is deterministic, while HIL Rate Group varies by several metres. Because variance is low in most conditions, even sub-metre differences are statistically significant. We therefore judge accuracy by effect size against the 12\,m threshold and report significance alongside it. Since the baseline has zero variance, each test reduces to a one-sample test against its value. We apply no multiple-comparison correction, and we judge $H_2$ from mean wall-clock time and spread without a separate SIL--HIL test.
+\begin{table*}[t]
+\centering
+\caption{Mean $\pm$ one standard deviation over 10 runs per configuration. Apogee time is within 0.04\,s of the baseline (23.49\,s) in every configuration. Rate Group runs at 25\,Hz.}
+\label{tab:summary}
+\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Mode} & \textbf{Apogee (m)} & \textbf{Wall time (s)} & \textbf{Drogue Parachute (s)} & \textbf{Main Parachute (s)} \\
+\midrule
+Baseline & 3061.94 $\pm$ 0.00 & 26.9 $\pm$ 1.1 & 25.00 $\pm$ 0.00 & 44.60 $\pm$ 0.00 \\
+\midrule
+SIL Lockstep   & 3061.86 $\pm$ 0.04 & 44.9 $\pm$ 3.8 & 25.00 $\pm$ 0.00 & 44.60 $\pm$ 0.00 \\
+SIL Snapshot   & 3065.98 $\pm$ 0.03 & 36.4 $\pm$ 2.0 & 25.00 $\pm$ 0.01 & 44.60 $\pm$ 0.00 \\
+SIL Rate Group & 3065.78 $\pm$ 0.19 & 36.0 $\pm$ 4.5 & 24.84 $\pm$ 0.04 & 45.18 $\pm$ 0.25 \\
+\midrule
+HIL Lockstep   & 3061.87 $\pm$ 0.03 & 48.8 $\pm$ 3.7 & 25.01 $\pm$ 0.00 & 44.64 $\pm$ 0.01 \\
+HIL Snapshot   & 3066.00 $\pm$ 0.06 & 41.8 $\pm$ 1.3 & 25.01 $\pm$ 0.00 & 44.64 $\pm$ 0.01 \\
+HIL Rate Group & 3069.33 $\pm$ 7.46 & 38.2 $\pm$ 1.7 & 24.91 $\pm$ 0.07 & 45.09 $\pm$ 0.28 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\textbf{Analysis.} We compare each configuration with the baseline using a two-sample Welch $t$-test at $\alpha=0.05$, which does not assume equal variances: the baseline is deterministic, while HIL Rate Group varies by several metres. Because variance is low in most conditions, even sub-metre differences are statistically significant. We therefore judge accuracy by distances staying below the 12\,m threshold and report significance alongside it. Since the baseline has zero variance, each test reduces to a one-sample test against its value. We apply no multiple-comparison correction, and we judge $H_2$ from mean wall-clock time and spread without a separate SIL--HIL test.

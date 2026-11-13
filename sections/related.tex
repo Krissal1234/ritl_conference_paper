@@ -7,7 +7,7 @@ For HPR, the only prior work we found that connects RocketPy to embedded hardwar
 
 \begin{table}[t]
 \centering
-\caption{Closed-loop verification work discussed above.}
+\caption{Overview of related simulation-based testing approaches.}
 \label{tab:related}
 \footnotesize
 \setlength{\tabcolsep}{3pt}
@@ -15,13 +15,13 @@ For HPR, the only prior work we found that connects RocketPy to embedded hardwar
 \toprule
 \textbf{Work (domain)} & \textbf{Simulator $\rightarrow$ software under test} & \textbf{Mode} & \textbf{Loop} \\
 \midrule
-Santos et al. (UAV) & X-Plane $\rightarrow$ microcontroller autopilot & HIL & closed \\
-Bittar et al. (UAV) & X-Plane $\rightarrow$ Simulink controllers & SIL & closed \\
-Coopmans et al. (UAV) & JSBSim $\rightarrow$ Paparazzi & SIL, HIL & closed \\
-Cols-Margenet et al. (spacecraft) & Basilisk $\rightarrow$ Raspberry Pi & HIL & closed \\
-Kiesbye et al. (CubeSat) & Simulink $\rightarrow$ MOVE-II flight code & SIL, HIL & closed \\
-Netzel et al. (rocket) & RocketPy replay $\rightarrow$ apogee detection & HIL & open \\
-\textbf{RITL (rocket)} & RocketPy $\leftrightarrow$ F Prime & SIL, HIL & closed \\
+Santos et al. \cite{santos-hil-uav-autopilot} (UAV) & X-Plane $\rightarrow$ microcontroller autopilot & HIL & closed \\
+Bittar et al. \cite{bittar-guidance-sil-uav-xplane-simulink} (UAV) & X-Plane $\rightarrow$ Simulink controllers & SIL & closed \\
+Coopmans et al. \cite{coopmans-sil-hil-verification-uav} (UAV) & JSBSim $\rightarrow$ Paparazzi & SIL, HIL & closed \\
+Cols-Margenet et al. \cite{colsmargenet2017modular} (Spacecraft) & Basilisk $\rightarrow$ Raspberry Pi & HIL & closed \\
+Kiesbye et al. \cite{kiesbye2019-moveII-cubsat} (CubeSat) & Simulink $\rightarrow$ MOVE-II flight code & SIL, HIL & closed \\
+Netzel et al. \cite{netzel-rocketpy-hil} (Rocket) & RocketPy replay $\rightarrow$ apogee detection & HIL & open \\
+\textbf{RITL (Rocket)} & RocketPy $\leftrightarrow$ F Prime & SIL, HIL & closed \\
 \bottomrule
 \end{tabular}
 \end{table}
